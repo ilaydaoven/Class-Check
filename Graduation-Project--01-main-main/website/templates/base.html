@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Welcome Page</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        background: linear-gradient(
+          to bottom left,
+          #6356c7,
+          #6b00d7,
+          #3e00b3,
+          #190087,
+          #150073
+        );
+        margin: 0;
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      .content {
+        background-color: white;
+        padding: 20px; /* İçeriği kenarlardan ayırır */
+        border-radius: 10px; /* Kenarları yuvarlar */
+        max-width: 400px; /* Maksimum genişlik */
+        width: 90%; /* Genişliği yüzde olarak ayarlar */
+      }
+      .input-field {
+        width: 100%;
+      }
+      .button-bg {
+        background: #190087;
+      }
+      .button-bg:hover {
+        background-color: #150073;
+      }
+      .button-active {
+        background-color: #3e00b3;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="flex flex-col content">
+      <h1 class="text-3xl mb-4 text-center">Welcome!</h1>
+
+      <div class="flex flex-col gap-6">
+        <form action="{{ url_for('views.login') }}" method="get">
+          <button
+            class="button-bg hover:bg-blue-600 w-full text-white font-bold py-3 px-6 rounded-lg"
+          >
+            LOGIN
+          </button>
+        </form>
+      </div>
+    </div>
+  </body>
+</html>

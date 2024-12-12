@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sign Up Page</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        background: linear-gradient(
+          to bottom left,
+          #6356c7,
+          #6b00d7,
+          #3e00b3,
+          #190087,
+          #150073
+        );
+        margin: 0;
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      .content {
+        background-color: white;
+        padding: 20px;
+        border-radius: 10px;
+        max-width: 400px;
+        width: 90%;
+      }
+      .input-field {
+        width: 100%;
+      }
+      .button-bg {
+        background: #190087;
+      }
+      .button-bg:hover {
+        background-color: #150073;
+      }
+      .button-active {
+        background-color: #3e00b3;
+      }
+      .invalid {
+        border-color: red;
+      }
+      .error-message {
+        color: red;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+      }
+      #userAlreadyExistError {
+        color: red;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+        background-color: #ffcccc;
+        padding: 0.5rem;
+        border-radius: 5px;
+        margin-bottom: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="content">
+      {% with messages = get_flashed_messages(with_categories=true) %} {% if
+      messages %} {% for category, message in messages %} {% if category ==
+      'error' %} {% if 'user already exists' in message.lower() %}
+      <div id="userAlreadyExistError">{{ message }}</div>
+      {% endif %} {% endif %} {% endfor %} {% endif %} {% endwith %}
+      <form
+        id="signupForm"
+        action="{{ url_for('auth.signup') }}"
+        method="POST"
+        class="mt-4"
+      >
+        <label for="teacher_name" class="block mb-2">Name:</label>
+        <input
+          type="text"
+          id="teacher_name"
+          name="teacher_name"
+          class="w-full p-2 border border-gray-300 rounded mb-2 input-field"
+        />
+
+        <label for="teacher_surname" class="block mb-2">Surname:</label>
+        <input
+          type="text"
+          id="teacher_surname"
+          name="teacher_surname"
+          class="w-full p-2 border border-gray-300 rounded mb-4 input-field"
+        />
+
+        <label for="teacher_id" class="block mb-2">Teacher ID:</label>
+        <input
+          type="text"
+          id="teacher_id"
+          name="teacher_id"
+          class="w-full p-2 border border-gray-300 rounded mb-4 input-field"
+        />
+
+        <label for="email" class="block mb-2">E-mail:</label>
+        <input
+          type="email"
+          id="email"
+          name="email"
+          class="w-full p-2 border border-gray-300 rounded mb-2 input-field"
+          placeholder="name@aydin.edu.tr"
+        />
+        <div id="emailError" class="error-message"></div>
+
+        <label for="password" class="block mb-2">Password:</label>
+        <div class="w-full relative">
+          <input
+            type="password"
+            id="password"
+            name="password"
+            class="w-full p-2 border border-gray-300 rounded mb-2 input-field"
+            placeholder="••••••••"
+          />
+          <button
+            type="button"
+            class="absolute right-3 top-3 password-toggle"
+            onclick="togglePasswordVisibility()"
+          >
+            <img
+              src="{{ url_for('static', filename='images/hide_password.png') }}"
+              alt="Toggle Password Visibility"
+              class="w-4 h-4"
+            />
+          </button>
+        </div>
+        <div id="passwordError" class="error-message"></div>
+
+        <label for="confirmPassword" class="block mb-2"
+          >Rewrite your password:</label
+        >
+        <div class="w-full relative">
+          <input
+            type="password"
+            id="confirmPassword"
+            name="confirmPassword"
+            class="w-full p-2 border border-gray-300 rounded mb-2 input-field"
+            placeholder="••••••••"
+          />
+          <button
+            type="button"
+            class="absolute right-3 top-3 password-toggle"
+            onclick="toggleConfirmPasswordVisibility()"
+          >
+            <img
+              src="{{ url_for('static', filename='images/hide_password.png') }}"
+              alt="Toggle Password Visibility"
+              class="w-4 h-4"
+            />
+          </button>
+        </div>
+        <div id="confirmPasswordError" class="error-message"></div>
+
+        <button
+          class="button-bg hover:bg-blue-600 w-full text-white font-bold py-3 px-6 mt-4 rounded-lg"
+        >
+          SIGN UP
+        </button>
+      </form>
+    </div>
+    <script>
+      document
+        .getElementById("signupForm")
+        .addEventListener("submit", function (event) {
+          var email = document.getElementById("email");
+          var password = document.getElementById("password");
+          var confirmPassword = document.getElementById("confirmPassword");
+          var emailError = document.getElementById("emailError");
+          var passwordError = document.getElementById("passwordError");
+          var confirmPasswordError = document.getElementById(
+            "confirmPasswordError"
+          );
+          var userAlreadyExistError = document.getElementById(
+            "userAlreadyExistError"
+          );
+          var isValid = true;
+          var errorMessages = [];
+
+          // Reset previous styles and errors
+          email.classList.remove("invalid");
+          password.classList.remove("invalid");
+          confirmPassword.classList.remove("invalid");
+          emailError.textContent = "";
+          passwordError.textContent = "";
+          confirmPasswordError.textContent = "";
+          userAlreadyExistError.textContent = "";
+
+          // Validate email domain
+          /* if (!email.value.endsWith("@aydin.edu.tr")) {
+            isValid = false;
+            emailError.textContent =
+              "Invalid email domain. Only @aydin.edu.tr emails are allowed.";
+            email.classList.add("invalid");
+          } */
+
+          // Validate password
+          if (
+            password.value.length < 8 ||
+            password.value.length > 16 ||
+            !/[A-Z]/.test(password.value) ||
+            !/[a-z]/.test(password.value) ||
+            !/[0-9]/.test(password.value)
+          ) {
+            isValid = false;
+            errorMessages.push(
+              "Your password must be 8-16 characters, include at least one lowercase letter, one uppercase letter, and a number."
+            );
+            password.classList.add("invalid");
+          }
+
+          // Check if passwords match
+          if (password.value !== confirmPassword.value) {
+            isValid = false;
+            confirmPasswordError.textContent = "Passwords do not match.";
+            confirmPassword.classList.add("invalid");
+          }
+
+          if (!isValid) {
+            event.preventDefault(); // Prevent form submission
+            passwordError.textContent = errorMessages.join(" ");
+          }
+        });
+
+      function togglePasswordVisibility() {
+        var passwordInput = document.getElementById("password");
+        var passwordToggle = document.querySelector(".password-toggle");
+        if (passwordInput.type === "password") {
+          passwordInput.type = "text";
+          passwordToggle.src =
+            "{{ url_for('static', filename='images/show_password.png') }}"; // Change to show password icon
+        } else {
+          passwordInput.type = "password";
+          passwordToggle.src =
+            "{{ url_for('static', filename='images/hide_password.png') }}"; // Change back to hide password icon
+        }
+      }
+
+      function toggleConfirmPasswordVisibility() {
+        var passwordInput = document.getElementById("confirmPassword");
+        var passwordToggle = document.querySelector(".password-toggle");
+        if (passwordInput.type === "password") {
+          passwordInput.type = "text";
+          passwordToggle.src =
+            "{{ url_for('static', filename='images/show_password.png') }}"; // Change to show password icon
+        } else {
+          passwordInput.type = "password";
+          passwordToggle.src =
+            "{{ url_for('static', filename='images/hide_password.png') }}"; // Change back to hide password icon
+        }
+      }
+    </script>
+  </body>
+</html>

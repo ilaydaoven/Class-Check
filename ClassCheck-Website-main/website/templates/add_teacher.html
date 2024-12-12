@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Add/Remove Teacher</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      .button-bg {
+        background: #190087;
+      }
+      .button-bg:hover {
+        background-color: #150073;
+      }
+      .button-active {
+        background-color: #3e00b3;
+      }
+      .modal {
+        display: none;
+        position: fixed;
+        z-index: 1;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgb(0, 0, 0);
+        background-color: rgba(0, 0, 0, 0.4);
+        padding-top: 60px;
+      }
+      .modal-content {
+        background-color: #fefefe;
+        margin: 5% auto;
+        border: 1px solid #888;
+        width: 30%;
+        border-radius: 20px;
+      }
+      .close {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+        position: relative;
+        top: -2px;
+        right: 5px;
+      }
+      .close:hover,
+      .close:focus {
+        color: black;
+        text-decoration: none;
+        cursor: pointer;
+      }
+      .message-success {
+        color: green;
+        background-color: #d4edda;
+        border-color: #c3e6cb;
+        padding: 10px;
+        border-radius: 5px;
+      }
+      .message-error {
+        color: red;
+        background-color: #ffcccc;
+        border-color: #f5c6cb;
+        padding: 10px;
+        border-radius: 5px;
+      }
+      .password-container {
+        position: relative;
+      }
+      .toggle-password {
+        position: absolute;
+        top: 22px;
+        right: 10px;
+        transform: translateY(-50%);
+        cursor: pointer;
+        width: 24px;
+        height: 24px;
+      } 
+    </style>
+  </head>
+  <body>
+    <div class="flex flex-col h-full w-full my-6 md:mb-0 gap-6">
+      <form
+        id="add_teacher_form"
+        action="{{ url_for('auth.add_teacher') }}"
+        method="POST"
+        class="mt-4"
+      >
+        <div id="userAlreadyExistError" class="error-message"></div>
+        <label for="teacher_id" class="block mb-2">Teacher ID:</label>
+        <input
+          type="text"
+          id="teacher_id"
+          name="teacher_id"
+          class="w-full p-2 border border-gray-300 rounded mb-2 input-field"
+        />
+
+        <label for="teacher_name" class="block mb-2">Name:</label>
+        <input
+          type="text"
+          id="teacher_name"
+          name="teacher_name"
+          class="w-full p-2 border border-gray-300 rounded mb-4 input-field"
+        />
+
+        <label for="teacher_surname" class="block mb-2">Surname:</label>
+        <input
+          type="text"
+          id="teacher_surname"
+          name="teacher_surname"
+          class="w-full p-2 border border-gray-300 rounded mb-4 input-field"
+        />
+
+        <label for="email" class="block mb-2">E-mail:</label>
+        <input
+          type="email"
+          id="email"
+          name="email"
+          class="w-full p-2 border border-gray-300 rounded mb-4 input-field"
+          placeholder="someone@example.com"
+        />
+
+        <label for="password" class="block mb-2">Password:</label>
+        <div class="password-container">
+          <input
+            type="password"
+            id="password"
+            name="password"
+            class="w-full p-2 border border-gray-300 rounded mb-4 input-field"
+            placeholder="••••••••"
+          />
+          <span class="toggle-password" onclick="togglePassword()">
+            <img
+              src="{{ url_for('static', filename='images/hide_password.png') }}"
+              alt="Show Password"
+              id="toggle-password-icon"
+            />
+          </span>
+        </div>
+
+        <label for="confirm_password" class="block mb-2"
+          >Confirm Password:</label
+        >
+        <div class="password-container relative">
+          <input
+            type="password"
+            id="confirm_password"
+            name="confirm_password"
+            class="w-full p-2 border border-gray-300 rounded mb-4 input-field"
+            placeholder="••••••••"
+          />
+          <span class="toggle-password" onclick="toggleConfirmPassword()" >
+            <img
+              src="{{ url_for('static', filename='images/hide_password.png') }}"
+              alt="Show Password"
+              id="toggle-confirm-password-icon"
+              
+            />
+          </span>
+        </div>
+
+        <button
+          id="add_teacher_button"
+          class="button-bg text-white font-bold py-3 px-6 mt-4 rounded-lg"
+        >
+          Add Teacher
+        </button>
+      </form>
+
+      <form
+        id="remove_teacher_form"
+        action="{{ url_for('auth.remove_teacher') }}"
+        method="POST"
+        class="mt-4"
+      >
+        <label for="teacher_id_remove" class="block mb-2">Teacher ID:</label>
+        <input
+          type="text"
+          id="teacher_id_remove"
+          name="teacher_id"
+          class="w-full p-2 border border-gray-300 rounded mb-2 input-field"
+        />
+
+        <button
+          id="remove_teacher_button"
+          class="button-bg text-white font-bold py-3 px-6 mt-4 rounded-lg"
+        >
+          Remove Teacher
+        </button>
+      </form>
+
+      <div id="myModal" class="modal">
+        <div class="modal-content">
+          <span class="close">&times;</span>
+          <p id="modal-message"></p>
+        </div>
+      </div>
+    </div>
+    <script>
+      function togglePassword() {
+        var passwordField = document.getElementById("password");
+        var passwordToggle = document.getElementById("toggle-password-icon");
+        if (passwordField.type === "password") {
+          passwordField.type = "text";
+          passwordToggle.src =
+            "{{ url_for('static', filename='images/show_password.png') }}";
+        } else {
+          passwordField.type = "password";
+          passwordToggle.src =
+            "{{ url_for('static', filename='images/hide_password.png') }}";
+        }
+      }
+
+      function toggleConfirmPassword() {
+        var confirmPasswordField = document.getElementById("confirm_password");
+        var confirmPasswordToggle = document.getElementById(
+          "toggle-confirm-password-icon"
+        );
+        if (confirmPasswordField.type === "password") {
+          confirmPasswordField.type = "text";
+          confirmPasswordToggle.src =
+            "{{ url_for('static', filename='images/show_password.png') }}";
+        } else {
+          confirmPasswordField.type = "password";
+          confirmPasswordToggle.src =
+            "{{ url_for('static', filename='images/hide_password.png') }}";
+        }
+      }
+
+      document
+        .getElementById("add_teacher_form")
+        .addEventListener("submit", function (event) {
+          event.preventDefault(); // Prevent page reload
+          var form = event.target;
+          var formData = new FormData(form);
+
+          // Define modal elements
+          var modal = document.getElementById("myModal");
+          var modalMessage = document.getElementById("modal-message");
+
+          // Check for empty fields
+          var teacher_id = document.getElementById("teacher_id").value;
+          var teacher_name = document.getElementById("teacher_name").value;
+          var teacher_surname =
+            document.getElementById("teacher_surname").value;
+          var email = document.getElementById("email").value;
+          var password = document.getElementById("password").value;
+          var confirmPassword =
+            document.getElementById("confirm_password").value;
+
+          if (
+            !teacher_id ||
+            !teacher_name ||
+            !teacher_surname ||
+            !email ||
+            !password ||
+            !confirmPassword
+          ) {
+            modalMessage.textContent = "All fields are required!";
+            modalMessage.className = "message-error";
+            modal.style.display = "block";
+            return;
+          }
+
+          // Password validation
+          if (password !== confirmPassword) {
+            modalMessage.textContent = "Passwords do not match!";
+            modalMessage.className = "message-error";
+            modal.style.display = "block";
+            return;
+          }
+
+          // Password complexity check
+          if (!isPasswordValid(password)) {
+            modalMessage.textContent =
+              "Your password must be 8-16 characters, include at least one lowercase letter, one uppercase letter, one number, and one special character.";
+            modalMessage.className = "message-error";
+            modal.style.display = "block";
+            return;
+          }
+
+          function isPasswordValid(password) {
+            var passwordRegex =
+              /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&()_+}{":;'?/>,.])[0-9a-zA-Z!@#$%^&()_+}{":;'?/>,.]{8,16}$/;
+            return passwordRegex.test(password);
+          }
+
+          fetch(form.action, {
+            method: "POST",
+            body: formData,
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              if (data.success) {
+                modalMessage.textContent = data.message;
+                modalMessage.className = "message-success";
+              } else {
+                modalMessage.textContent = data.message;
+                modalMessage.className = "message-error";
+              }
+              modal.style.display = "block";
+            })
+            .catch((error) => {
+              console.error("Error:", error);
+              modalMessage.textContent = "An unexpected error occurred.";
+              modalMessage.className = "message-error";
+              modal.style.display = "block";
+            });
+        });
+
+      document
+        .getElementById("remove_teacher_form")
+        .addEventListener("submit", function (event) {
+          event.preventDefault(); // Prevent page reload
+          var form = event.target;
+          var formData = new FormData(form);
+
+          var modal = document.getElementById("myModal");
+          var modalMessage = document.getElementById("modal-message");
+
+          fetch(form.action, {
+            method: "POST",
+            body: formData,
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              if (data.success) {
+                modalMessage.textContent = data.message;
+                modalMessage.className = "message-success";
+              } else {
+                modalMessage.textContent = data.message;
+                modalMessage.className = "message-error";
+              }
+              modal.style.display = "block";
+            })
+            .catch((error) => {
+              console.error("Error:", error);
+              modalMessage.textContent = "An unexpected error occurred.";
+              modalMessage.className = "message-error";
+              modal.style.display = "block";
+            });
+        });
+
+      document.getElementsByClassName("close")[0].onclick = function () {
+        var modal = document.getElementById("myModal");
+        modal.style.display = "none";
+      };
+
+      window.onclick = function (event) {
+        var modal = document.getElementById("myModal");
+        if (event.target == modal) {
+          modal.style.display = "none";
+        }
+      };
+    </script>
+  </body>
+</html>

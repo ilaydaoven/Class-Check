@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Add/Remove Student</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      .button-bg {
+        background: #190087;
+      }
+      .button-bg:hover {
+        background-color: #150073;
+      }
+      .button-active {
+        background-color: #3e00b3;
+      }
+      .modal {
+        display: none;
+        position: fixed;
+        z-index: 1;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgb(0, 0, 0);
+        background-color: rgba(0, 0, 0, 0.4);
+        padding-top: 60px;
+      }
+      .modal-content {
+        background-color: #fefefe;
+        margin: 5% auto;
+        border: 1px solid #888;
+        width: 30%;
+        border-radius: 20px;
+      }
+      .close {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+        position: relative;
+        top: -2px;
+        right: 5px;
+      }
+      .close:hover,
+      .close:focus {
+        color: black;
+        text-decoration: none;
+        cursor: pointer;
+      }
+      .message-success {
+        color: green;
+        background-color: #d4edda;
+        border-color: #c3e6cb;
+        padding: 10px;
+        border-radius: 5px;
+      }
+      .message-error {
+        color: red;
+        background-color: #ffcccc;
+        border-color: #f5c6cb;
+        padding: 10px;
+        border-radius: 5px;
+      }
+      .password-container {
+        position: relative;
+      }
+      .toggle-password {
+        position: absolute;
+        top: 50%;
+        right: 10px;
+        transform: translateY(-50%);
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="flex flex-col justify-stretch h-full w-full my-6 md:mb-0 gap-6">
+      <form
+        id="add_student_form"
+        action="{{ url_for('views.add_student') }}"
+        method="POST"
+        enctype="multipart/form-data"
+        class="mt-4"
+      >
+        <div id="userAlreadyExistError" class="error-message"></div>
+        <label for="student_id" class="block mb-2">Student ID:</label>
+        <input
+          type="text"
+          id="student_id"
+          name="student_id"
+          class="w-full p-2 border border-gray-300 rounded mb-2 input-field"
+        />
+
+        <label for="student_name" class="block mb-2">Name:</label>
+        <input
+          type="text"
+          id="student_name"
+          name="student_name"
+          class="w-full p-2 border border-gray-300 rounded mb-4 input-field"
+        />
+
+        <label for="student_surname" class="block mb-2">Surname:</label>
+        <input
+          type="text"
+          id="student_surname"
+          name="student_surname"
+          class="w-full p-2 border border-gray-300 rounded mb-4 input-field"
+        />
+
+        <label for="images" class="block mb-2">Upload 5 Images:</label>
+        <input
+          type="file"
+          id="images"
+          name="images"
+          accept="image/*"
+          multiple
+          class="w-full p-2 border border-gray-300 rounded mb-4 input-field"
+        />
+
+        <button
+          id="add_student_button"
+          class="button-bg text-white font-bold py-3 px-6 mt-4 rounded-lg"
+        >
+          Add Student
+        </button>
+      </form>
+
+      <!-- Existing form for removing students -->
+      <form
+        id="remove_student_form"
+        action="{{ url_for('auth.remove_student') }}"
+        method="POST"
+        class="mt-4"
+      >
+        <label for="student_id_remove" class="block mb-2">Student ID: </label>
+        <input
+          type="text"
+          id="student_id_remove"
+          name="student_id"
+          class="w-full p-2 border border-gray-300 rounded mb-2 input-field"
+        />
+
+        <button
+          id="remove_student_button"
+          class="button-bg text-white font-bold py-3 px-6 mt-4 rounded-lg"
+        >
+          Remove Student
+        </button>
+      </form>
+
+      <div id="myModal" class="modal">
+        <div class="modal-content">
+          <span class="close">&times;</span>
+          <p id="modal-message"></p>
+        </div>
+      </div>
+    </div>
+    <script>
+      function togglePassword() {
+        var passwordField = document.getElementById("password");
+        var passwordToggle = document.querySelector(".toggle-password");
+        if (passwordField.type === "password") {
+          passwordField.type = "text";
+          passwordToggle.textContent = "👁️";
+        } else {
+          passwordField.type = "password";
+          passwordToggle.textContent = "👁️";
+        }
+      }
+
+      document
+        .getElementById("add_student_form")
+        .addEventListener("submit", function (event) {
+          event.preventDefault(); // Prevent page from reloading
+          var form = event.target;
+          var formData = new FormData(form);
+
+          fetch(form.action, {
+            method: "POST",
+            body: formData,
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              var modal = document.getElementById("myModal");
+              var modalMessage = document.getElementById("modal-message");
+              if (data.success) {
+                modalMessage.textContent = data.message;
+                modalMessage.className = "message-success";
+              } else {
+                modalMessage.textContent = data.message;
+                modalMessage.className = "message-error";
+              }
+              modal.style.display = "block";
+            })
+            .catch((error) => {
+              console.error("Error:", error);
+              var modal = document.getElementById("myModal");
+              var modalMessage = document.getElementById("modal-message");
+              modalMessage.textContent = "An unexpected error occurred.";
+              modal.style.display = "block";
+            });
+        });
+
+      document
+        .getElementById("remove_student_form")
+        .addEventListener("submit", function (event) {
+          event.preventDefault(); // Prevent page from reloading
+          var form = event.target;
+          var formData = new FormData(form);
+
+          fetch(form.action, {
+            method: "POST",
+            body: formData,
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              var modal = document.getElementById("myModal");
+              var modalMessage = document.getElementById("modal-message");
+              if (data.success) {
+                modalMessage.textContent = data.message;
+                modalMessage.className = "message-success";
+              } else {
+                modalMessage.textContent = data.message;
+                modalMessage.className = "message-error";
+              }
+              modal.style.display = "block";
+            })
+            .catch((error) => {
+              console.error("Error:", error);
+              var modal = document.getElementById("myModal");
+              var modalMessage = document.getElementById("modal-message");
+              modalMessage.textContent = "An unexpected error occurred.";
+              modal.style.display = "block";
+            });
+        });
+
+      document.getElementsByClassName("close")[0].onclick = function () {
+        var modal = document.getElementById("myModal");
+        modal.style.display = "none";
+      };
+
+      window.onclick = function (event) {
+        var modal = document.getElementById("myModal");
+        if (event.target == modal) {
+          modal.style.display = "none";
+        }
+      };
+    </script>
+  </body>
+</html>

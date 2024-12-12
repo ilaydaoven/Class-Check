@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Enroll Student in Course</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      .button-bg {
+        background: #190087;
+      }
+      .button-bg:hover {
+        background-color: #150073;
+      }
+      .button-active {
+        background-color: #3e00b3;
+      }
+      .modal {
+        display: none;
+        position: fixed;
+        z-index: 1;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgb(0, 0, 0);
+        background-color: rgba(0, 0, 0, 0.4);
+        padding-top: 60px;
+      }
+      .modal-content {
+        background-color: #fefefe;
+        margin: 5% auto;
+        border: 1px solid #888;
+        width: 30%;
+        border-radius: 20px;
+      }
+      .close {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+        position: relative;
+        top: -2px;
+        right: 5px;
+      }
+      .close:hover,
+      .close:focus {
+        color: black;
+        text-decoration: none;
+        cursor: pointer;
+      }
+      .message-success {
+        color: green;
+        background-color: #d4edda;
+        border-color: #c3e6cb;
+        padding: 10px;
+        border-radius: 5px;
+      }
+      .message-error {
+        color: red;
+        background-color: #ffcccc;
+        border-color: #f5c6cb;
+        padding: 10px;
+        border-radius: 5px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="flex flex-col justify-stretch h-full w-full my-6 md:mb-0 gap-6">
+      <form
+        id="enroll_student_form"
+        action="{{ url_for('auth.enroll_student') }}"
+        method="POST"
+        class="mt-4"
+      >
+        <div id="userAlreadyExistError" class="error-message"></div>
+        <label for="student_id" class="block mb-2">Student ID:</label>
+        <input
+          type="text"
+          id="student_id"
+          name="student_id"
+          class="w-full p-2 border border-gray-300 rounded mb-2 input-field"
+        />
+
+        <label for="course_id" class="block mb-2">Course ID:</label>
+        <input
+          type="text"
+          id="course_id"
+          name="course_id"
+          class="w-full p-2 border border-gray-300 rounded mb-4 input-field"
+        />
+
+        <button
+          type="button"
+          class="w-full p-2 mt-4 text-white button-bg rounded"
+          onclick="submitEnrollForm()"
+        >
+          Enroll Student
+        </button>
+      </form>
+
+      <form
+        id="unenroll_student_form"
+        action="{{ url_for('auth.unenroll_student') }}"
+        method="POST"
+        class="mt-4"
+      >
+        <label for="student_id" class="block mb-2">Student ID:</label>
+        <input
+          type="text"
+          id="student_id"
+          name="student_id"
+          class="w-full p-2 border border-gray-300 rounded mb-2 input-field"
+        />
+
+        <label for="course_id" class="block mb-2">Course ID:</label>
+        <input
+          type="text"
+          id="course_id"
+          name="course_id"
+          class="w-full p-2 border border-gray-300 rounded mb-4 input-field"
+        />
+
+        <button
+          type="button"
+          class="w-full p-2 mt-4 text-white bg-red-600 rounded"
+          onclick="submitUnenrollForm()"
+        >
+          Delete Student
+        </button>
+      </form>
+
+      <div id="myModal" class="modal">
+        <div class="modal-content">
+          <span class="close" onclick="closeModal()">&times;</span>
+          <p id="modal-message"></p>
+        </div>
+      </div>
+    </div>
+    <script>
+      function submitEnrollForm() {
+        const form = document.getElementById("enroll_student_form");
+        const formData = new FormData(form);
+        const actionUrl = form.getAttribute("action"); // Formun action değerini al
+
+        fetch(actionUrl, {
+          method: "POST",
+          body: formData,
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            showModal(data.message, data.success);
+          })
+          .catch((error) => {
+            showModal("An error occurred: " + error, false);
+          });
+      }
+
+      function submitUnenrollForm() {
+        const form = document.getElementById("unenroll_student_form");
+        const formData = new FormData(form);
+        const actionUrl = form.getAttribute("action"); // Formun action değerini al
+
+        fetch(actionUrl, {
+          method: "POST",
+          body: formData,
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            showModal(data.message, data.success);
+          })
+          .catch((error) => {
+            showModal("An error occurred: " + error, false);
+          });
+      }
+
+      function showModal(message, success) {
+        const modal = document.getElementById("myModal");
+        const modalMessage = document.getElementById("modal-message");
+        modalMessage.textContent = message;
+        modalMessage.className = success ? "message-success" : "message-error";
+        modal.style.display = "block";
+      }
+
+      function closeModal() {
+        const modal = document.getElementById("myModal");
+        modal.style.display = "none";
+      }
+
+      window.onclick = function (event) {
+        const modal = document.getElementById("myModal");
+        if (event.target == modal) {
+          modal.style.display = "none";
+        }
+      };
+    </script>
+  </body>
+</html>

@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Authorized Login</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link
+      href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
+      rel="stylesheet"
+    />
+
+    <style>
+      .custom-background {
+        background: linear-gradient(
+          to left,
+          #6356c7,
+          #6b00d7,
+          #3e00b3,
+          #190087,
+          #150073
+        );
+      }
+      .button-bg {
+        background: #190087;
+      }
+      .button-bg:hover {
+        background-color: #150073;
+      }
+      .button-active {
+        background-color: #3e00b3;
+      }
+      .language-selector {
+        display: none;
+        position: absolute;
+        top: 60px;
+        right: 20px;
+        background: white;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        padding: 10px;
+      }
+      .language-selector select {
+        width: 100%;
+      }
+      footer {
+        background: linear-gradient(
+          to left,
+          #6356c7,
+          #6b00d7,
+          #3e00b3,
+          #190087,
+          #150073
+        );
+        padding: 10px 0;
+        position: fixed;
+        bottom: 0;
+        width: 100%;
+        text-align: right;
+        padding-right: 20px;
+        font-size: 14px;
+        color: white;
+      }
+    </style>
+  </head>
+  <body class="bg-gray-100 flex flex-col h-screen">
+    <div
+      class="flex flex-row justify-between items-center custom-background p-6"
+    >
+      <div>
+        <div class="text-white text-2xl font-bold" data-key="welcome">
+          ClassCheck
+        </div>
+        <div class="text-white" data-key="description">Authorized</div>
+      </div>
+      <div>
+        <button id="gear-button" class="mr-5">
+          <img src="{{ url_for('static', filename='images/gear.png') }}" style="display: none;" />
+        </button>
+        <button onclick="window.location.href='{{ url_for('auth.logout') }}';">
+          <img src="{{ url_for('static', filename='images/logout.png') }}" />
+        </button>
+      </div>
+    </div>
+    <div id="language-selector" class="language-selector">
+      <label for="language-select">Choose a language:</label>
+      <select id="language-select">
+        <option value="en">English</option>
+        <option value="tr">Türkçe</option>
+      </select>
+    </div>
+    <div class="flex flex-row flex-grow">
+      <div
+        class="flex flex-col h-full bg-white md:w-1/4 w-1/3 shadow-lg rounded-lg px-6 my-6 mx-6 md:mb-0 gap-6"
+      >
+        <div id="message_div"></div>
+        <button
+          id="btn-teacher"
+          class="button-bg text-white font-bold py-3 px-6 rounded-lg"
+          onclick="loadContent('/add_teacher')"
+          data-key="addRemoveTeacher"
+        >
+          Add/Remove Teacher
+        </button>
+        <button
+          id="btn-student"
+          class="button-bg text-white font-bold py-3 px-6 rounded-lg"
+          onclick="loadContent('/add_student')"
+          data-key="addRemoveStudent"
+        >
+          Add/Remove Student
+        </button>
+        <button
+          id="btn-course"
+          class="button-bg hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-lg"
+          onclick="loadContent('/add_course')"
+          data-key="addRemoveClass"
+        >
+          Add/Remove Course
+        </button>
+        <button
+          id="btn-attendances"
+          class="button-bg hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-lg"
+          onclick="loadContent('/attendances')"
+          data-key="attendances"
+        >
+          Attendances
+        </button>
+        <button
+          id="fetchTeacherClassStudentList"
+          class="button-bg hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-lg"
+          onclick="loadContent('/teacherstudentclass')"
+          data-key="teacherstudentclass"
+        >
+          Teacher/Class/Student List
+        </button>
+        <button
+          id="btn-enroll_student"
+          class="button-bg hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-lg"
+          onclick="loadContent('/enroll_student')"
+          data-key="enroll_student"
+        >
+          Enroll Student in Course
+        </button>
+      </div>
+
+      <div
+        id="content"
+        class="flex items-center h-full w-full bg-white shadow-lg rounded-lg p-6 my-6 mr-6 md:mb-0"
+      >
+        <div id="default-image-container" class="w-full text-center">
+          <img src="{{ url_for('static', filename='images/logo.png') }}" class="mx-auto w-96" />
+        </div>
+      </div>
+    </div>
+
+    <footer>classcheckauthor@gmail.com</footer>
+
+    <script>
+      function loadContent(url) {
+        $("#default-image-container").hide();
+        $.get(url, function (data) {
+          $("#content").html(data);
+        });
+      }
+
+      document
+        .getElementById("add_teacher_form")
+        .addEventListener("submit", function (event) {
+          event.preventDefault(); // Sayfanın yeniden yüklenmesini engelle
+          var form = event.target;
+          var formData = new FormData(form);
+
+          fetch(form.action, {
+            method: "POST",
+            body: formData,
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              var messageDiv = document.getElementById("message_div");
+              if (data.status === "success") {
+                messageDiv.innerHTML =
+                  '<p style="color: green;">' + data.message + "</p>";
+              } else if (data.status === "error") {
+                messageDiv.innerHTML =
+                  '<p style="color: red;">' + data.message + "</p>";
+              }
+            })
+            .catch((error) => {
+              console.error("Error:", error);
+            });
+        });
+      let currentContent = "";
+
+      function toggleContent(url) {
+        if (currentContent === url) {
+          $("#content").empty();
+          currentContent = "";
+        } else {
+          $("#default-image-container").hide();
+          $("#content").empty();
+          $.get(url, function (data) {
+            $("#content").html(data);
+          });
+          currentContent = url;
+        }
+      }
+
+      function toggleLanguageSelector() {
+        $("#language-selector").toggle();
+      }
+
+      function changeLanguage(language) {
+        const translations = {
+          en: {
+            welcome: "ClassCheck",
+            description: "Authorized",
+            addRemoveStudent: "Add/Remove Student",
+            addRemoveTeacher: "Add/Remove Teacher",
+            classList: "Student/Teacher Class List",
+            addRemoveClass: "Add/Remove Class",
+            attendances: "Attendances",
+            bulkDataTransfer: "Bulk Data Transfer",
+          },
+          tr: {
+            welcome: "ClassCheck",
+            description: "Yetkili",
+            addRemoveStudent: "Öğrenci Ekle/Çıkar",
+            addRemoveTeacher: "Öğretmen Ekle/Çıkar",
+            classList: "Öğrenci/Öğretmen Sınıf Listesi",
+            addRemoveClass: "Sınıf Ekle/Çıkar",
+            attendances: "Yoklamalar",
+            bulkDataTransfer: "Toplu Veri Transferi",
+          },
+        };
+
+        $("[data-key]").each(function () {
+          const key = $(this).data("key");
+          $(this).text(translations[language][key]);
+        });
+      }
+
+      $(document).ready(function () {
+        $("#gear-button").click(function () {
+          toggleLanguageSelector();
+        });
+
+        $("#language-select").change(function () {
+          const selectedLanguage = $(this).val();
+          changeLanguage(selectedLanguage);
+        });
+
+        $("#logout-button").click(function () {
+          window.location.href = "{{ url_for('auth.logout') }}";
+        });
+      });
+    </script>
+  </body>
+</html>

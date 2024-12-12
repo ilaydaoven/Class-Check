@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login Page</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        background: linear-gradient(
+          to bottom left,
+          #6356c7,
+          #6b00d7,
+          #3e00b3,
+          #190087,
+          #150073
+        );
+        margin: 0;
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      .content {
+        background-color: white;
+        padding: 20px;
+        border-radius: 10px;
+        max-width: 400px;
+        width: 90%;
+      }
+      .input-field {
+        width: 100%;
+      }
+      .button-bg {
+        background: #190087;
+      }
+      .button-bg:hover {
+        background-color: #150073;
+      }
+      .button-active {
+        background-color: #3e00b3;
+      }
+      .error-message {
+        color: red;
+        font-size: 12px;
+      }
+      .input-error {
+        border-color: red !important;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="content">
+      <h1 class="text-3xl mb-4 text-center">Welcome!</h1>
+
+      <form action="{{ url_for('auth.login') }}" method="POST" class="mt-4">
+        <label for="email" class="block mb-1">E-mail:</label>
+        <input
+          type="email"
+          id="email"
+          name="email"
+          class="w-full p-2 border border-gray-300 rounded mb-2 input-field {% if invalid_login %} input-error {% endif %}"
+          placeholder="someone@example.com"
+          required
+        />
+
+        <label for="password" class="block mb-1">Password: </label>
+        <div class="w-full relative">
+          <input
+            type="password"
+            id="password"
+            name="password"
+            class="w-full p-2 border border-gray-300 rounded mb-4 input-field {% if invalid_login %} input-error {% endif %}"
+            placeholder="••••••••"
+            required
+          />
+          <button type="button" class="absolute right-3 top-3 w-4 h-4">
+            <img
+              src="{{ url_for('static', filename='images/hide_password.png') }}"
+              alt="Toggle Password Visibility"
+              onclick="togglePasswordVisibility()"
+              class="password-toggle"
+            />
+          </button>
+
+          {% if invalid_login %}
+          <div class="error-message">Invalid e-mail address or password</div>
+          {% endif %}
+        </div>
+        
+        <button
+          class="button-bg hover:bg-blue-600 w-full text-white font-bold py-3 px-6 rounded-lg"
+        >
+          LOGIN
+        </button>
+      </form>
+    </div>
+
+    <script>
+      function togglePasswordVisibility() {
+        var passwordInput = document.getElementById("password");
+        var passwordToggle = document.querySelector(".password-toggle");
+        if (passwordInput.type === "password") {
+          passwordInput.type = "text";
+          passwordToggle.src =
+            "{{ url_for('static', filename='images/show_password.png') }}";
+        } else {
+          passwordInput.type = "password";
+          passwordToggle.src =
+            "{{ url_for('static', filename='images/hide_password.png') }}";
+        }
+      }
+    </script>
+  </body>
+</html>
